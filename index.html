@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify  - Beat on songs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Varela+Round:wght@400&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #191414 0%, #1db954 100%);
+            font-family: 'Varela Round', sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            font-family: 'Ubuntu', sans-serif;
+            background: linear-gradient(90deg, #000000 0%, #191414 100%);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        nav ul {
+            display: flex;
+            align-items: center;
+            list-style-type: none;
+            height: 65px;
+            color: white;
+            padding: 0 2rem;
+        }
+
+        nav ul li {
+            padding: 0 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 20px;
+        }
+
+        nav ul li:not(.brand):hover {
+            background: rgba(29, 185, 84, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            font-weight: bolder;
+            font-size: 1.3rem;
+            color: #1db954;
+        }
+
+        .brand img {
+            width: 44px;
+            padding: 0 8px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .brand:hover img {
+            transform: rotate(360deg);
+        }
+
+        /* Main Container */
+        .container {
+            min-height: 72vh;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-family: 'Varela Round', sans-serif;
+            display: flex;
+            margin: 23px auto;
+            width: 70%;
+            border-radius: 20px;
+            padding: 34px;
+            background-image: linear-gradient(45deg, rgba(29, 185, 84, 0.1), rgba(0, 0, 0, 0.7)), 
+                              url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)" /></svg>');
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Song List */
+        .songList {
+            flex: 2;
+        }
+
+        .songList h1 {
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            color: #1db954;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .songItemContainer {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .songItem {
+            height: 60px;
+            display: flex;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
+            color: #191414;
+            margin: 12px 0;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .songItem::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(29, 185, 84, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .songItem:hover::before {
+            left: 100%;
+        }
+
+        .songItem:hover {
+            background: linear-gradient(90deg, rgba(29, 185, 84, 0.2) 0%, rgba(29, 185, 84, 0.1) 100%);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(29, 185, 84, 0.3);
+            color: white;
+        }
+
+        .songItem img {
+            width: 50px;
+            height: 50px;
+            margin: 0 20px;
+            border-radius: 50%;
+            border: 3px solid #1db954;
+            transition: all 0.3s ease;
+        }
+
+        .songItem:hover img {
+            transform: rotate(360deg) scale(1.1);
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.5);
+        }
+
+        .songName {
+            flex: 1;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .songlistplay {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timestamp {
+            margin: 0 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .timestamp i {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #1db954;
+            transition: all 0.3s ease;
+        }
+
+        .timestamp i:hover {
+            color: #1ed760;
+            transform: scale(1.2);
+        }
+
+        /* Song Banner */
+        .songBanner {
+            flex: 1;
+            margin-left: 2rem;
+            background: linear-gradient(45deg, #1db954, #1ed760);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        .songBanner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/><circle cx="50" cy="50" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/><circle cx="50" cy="50" r="10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></svg>') center/150px;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Bottom Player */
+        .bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 130px;
+            background: linear-gradient(180deg, #000000 0%, #191414 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-top: 2px solid #1db954;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Progress Bar */
+        #myProgressBar {
+            width: 80vw;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-bottom: 20px;
+        }
+
+        #myProgressBar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #1db954;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+        }
+
+        #myProgressBar::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #1db954;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+        }
+
+        /* Player Controls */
+        .icons {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .icons i {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #b3b3b3;
+        }
+
+        .icons i:hover {
+            color: #1db954;
+            transform: scale(1.2);
+        }
+
+        #masterPlay {
+            font-size: 3rem !important;
+            color: #1db954;
+        }
+
+        #previous, #next {
+            font-size: 2rem !important;
+        }
+
+        /* Song Info */
+        .songInfo {
+            position: absolute;
+            left: 10vw;
+            bottom: 40px;
+            font-family: 'Varela Round', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .songInfo img {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.4s ease-in;
+        }
+
+        .songInfo img.playing {
+            opacity: 1;
+        }
+
+        #masterSongName {
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        /* Responsive Design */
+        @media only screen and (max-width: 1100px) {
+            .container {
+                width: 90%;
+                flex-direction: column;
+                padding: 20px;
+            }
+            
+            .songBanner {
+                margin-left: 0;
+                margin-top: 2rem;
+                min-height: 200px;
+            }
+            
+            .songInfo {
+                position: relative;
+                left: 0;
+                bottom: 0;
+                justify-content: center;
+                margin-top: 1rem;
+            }
+            
+            .bottom {
+                height: auto;
+                padding: 1rem;
+            }
+            
+            .icons {
+                margin-top: 10px;
+            }
+            
+            #myProgressBar {
+                width: 90vw;
+            }
+        }
+
+        @media only screen and (max-width: 768px) {
+            nav ul {
+                padding: 0 1rem;
+            }
+            
+            .container {
+                margin: 10px auto;
+                width: 95%;
+            }
+            
+            .songItem {
+                height: 70px;
+            }
+            
+            .songItem img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .songName {
+                font-size: 0.9rem;
+            }
+            
+            .icons {
+                gap: 1rem;
+            }
+            
+            #masterPlay {
+                font-size: 2.5rem !important;
+            }
+            
+            #previous, #next {
+                font-size: 1.5rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li class="brand">
+                <img src="logo.png" alt="Spotify Logo">
+                Spotify 
+            </li>
+            <li>Home</li>
+            <li>About</li>
+            <li>Premium</li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="songList">
+            <h1>Best of NCS - No Copyright Sounds</h1>
+            <div class="songItemContainer">
+                <div class="songItem" data-song-index="0">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23ff6b6b'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-family='Arial'>♪</text></svg>" alt="Album Art">
+                    <span class="songName">Warriyo - Mortals</span>
+                    <span class="songlistplay">
+                        <span class="timestamp">03:50</span>
+                        <i class="far songItemPlay fa-play-circle" data-index="0"></i>
+                    </span>
+                </div>
+                
+                <div class="songItem" data-song-index="1">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%234ecdc4'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-family='Arial'>♫</text></svg>" alt="Album Art">
+                    <span class="songName">Cielo - Huma-Huma</span>
+                    <span class="songlistplay">
+                        <span class="timestamp">02:33</span>
+                        <i class="far songItemPlay fa-play-circle" data-index="1"></i>
+                    </span>
+                </div>
+                
+                <div class="songItem" data-song-index="2">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23a8e6cf'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-family='Arial'>♬</text></svg>" alt="Album Art">
+                    <span class="songName">DEAF KEV - Invincible</span>
+                    <span class="songlistplay">
+                        <span class="timestamp">04:20</span>
+                        <i class="far songItemPlay fa-play-circle" data-index="2"></i>
+                    </span>
+                </div>
+                
+                <div class="songItem" data-song-index="3">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23dda0dd'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-family='Arial'>♪</text></svg>" alt="Album Art">
+                    <span class="songName">Different Heaven - Nekozilla</span>
+                    <span class="songlistplay">
+                        <span class="timestamp">03:15</span>
+                        <i class="far songItemPlay fa-play-circle" data-index="3"></i>
+                    </span>
+                </div>
+                
+                <div class="songItem" data-song-index="4">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23ffb347'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-family='Arial'>♫</text></svg>" alt="Album Art">
+                    <span class="songName">Elektronomia - Sky High</span>
+                    <span class="songlistplay">
+                        <span class="timestamp">03:28</span>
+                        <i class="far songItemPlay fa-play-circle" data-index="4"></i>
+                    </span>
+                </div>
+                
+                <div class="songItem" data-song-index="5">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2398fb98'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-family='Arial'>♬</text></svg>" alt="Album Art">
+                    <span class="songName">JJD - Adventure</span>
+                    <span class="songlistplay">
+                        <span class="timestamp">02:56</span>
+                        <i class="far songItemPlay fa-play-circle" data-index="5"></i>
+                    </span>
+                </div>
+                
+                <div class="songItem" data-song-index="6">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23f4a460'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-family='Arial'>♪</text></svg>" alt="Album Art">
+                    <span class="songName">Cartoon - On & On</span>
+                    <span class="songlistplay">
+                        <span class="timestamp">03:41</span>
+                        <i class="far songItemPlay fa-play-circle" data-index="6"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="songBanner"></div>
+    </div>
+
+    <div class="bottom">
+        <input type="range" name="range" id="myProgressBar" min="0" value="0" max="100">
+        <div class="icons">
+            <i class="fas fa-step-backward" id="previous"></i>
+            <i class="far fa-play-circle" id="masterPlay"></i>
+            <i class="fas fa-step-forward" id="next"></i> 
+        </div>
+        <div class="songInfo">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" id="gif" alt="Playing">
+            <span id="masterSongName">Choose a song to play</span>
+        </div>
+    </div>
+
+    <script>
+        console.log("Welcome to Spotify ");
+
+        // Initialize variables
+        let songIndex = 0;
+        let audioElement = new Audio();
+        let masterPlay = document.getElementById('masterPlay');
+        let myProgressBar = document.getElementById('myProgressBar');
+        let gif = document.getElementById('gif');
+        let masterSongName = document.getElementById('masterSongName');
+        let songItems = Array.from(document.getElementsByClassName('songItem'));
+        let isPlaying = false;
+
+        // Enhanced song list with your original data
+        let songs = [
+            {songName: "Warriyo - Mortals [NCS Release]", filePath: "songs/1.mp3", coverPath: "covers/1.jpg"},
+            {songName: "Cielo - Huma-Huma", filePath: "songs/2.mp3", coverPath: "covers/2.jpg"},
+            {songName: "DEAF KEV - Invincible [NCS Release]", filePath: "songs/3.mp3", coverPath: "covers/3.jpg"},
+            {songName: "Different Heaven & EH!DE - My Heart [NCS Release]", filePath: "songs/4.mp3", coverPath: "covers/4.jpg"},
+            {songName: "Janji-Heroes-Tonight-feat-Johnning-NCS-Release", filePath: "songs/5.mp3", coverPath: "covers/5.jpg"},
+            
+         {songName: "Sakhiyaan - Salam-e-Ishq", filePath: "songs/7.mp3", coverPath: "covers/7.jpg"}
+        ];
+
+        // Initialize song covers and names
+        songItems.forEach((element, i) => {
+            if(i < songs.length) {
+                // Update cover image if it exists
+                const imgElement = element.getElementsByTagName("img")[0];
+                if(imgElement) {
+                    imgElement.src = songs[i].coverPath;
+                    imgElement.onerror = function() {
+                        // Fallback to placeholder if image doesn't exist
+                        this.src = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23${Math.floor(Math.random()*16777215).toString(16)}'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-family='Arial'>♪</text></svg>`;
+                    };
+                }
+                
+                // Update song name
+                const nameElement = element.getElementsByClassName("songName")[0];
+                if(nameElement) {
+                    nameElement.innerText = songs[i].songName;
+                }
+            }
+        });
+
+        // Set initial song
+        const initializePlayer = () => {
+            audioElement.src = songs[songIndex].filePath;
+            masterSongName.innerText = songs[songIndex].songName;
+            audioElement.preload = 'metadata';
+        };
+
+        initializePlayer();
+
+        // Enhanced play/pause functionality
+        const togglePlayPause = () => {
+            if(audioElement.paused || audioElement.currentTime <= 0) {
+                playCurrentSong();
+            } else {
+                pauseCurrentSong();
+            }
+        };
+
+        const playCurrentSong = () => {
+            audioElement.play().then(() => {
+                isPlaying = true;
+                masterPlay.classList.remove('fa-play-circle');
+                masterPlay.classList.add('fa-pause-circle');
+                gif.style.opacity = 1;
+                gif.classList.add('playing');
+                updateActiveButton();
+            }).catch((error) => {
+                console.log("Playback failed:", error);
+                // Fallback for when audio file doesn't exist
+                masterSongName.innerText = "Audio file not found - " + songs[songIndex].songName;
+            });
+        };
+
+        const pauseCurrentSong = () => {
+            audioElement.pause();
+            isPlaying = false;
+            masterPlay.classList.remove('fa-pause-circle');
+            masterPlay.classList.add('fa-play-circle');
+            gif.style.opacity = 0;
+            gif.classList.remove('playing');
+            updateActiveButton();
+        };
+
+        // Update active play button
+        const updateActiveButton = () => {
+            const currentButton = document.querySelector(`[data-index="${songIndex}"]`);
+            if(currentButton) {
+                if(isPlaying) {
+                    currentButton.classList.remove('fa-play-circle');
+                    currentButton.classList.add('fa-pause-circle');
+                } else {
+                    currentButton.classList.remove('fa-pause-circle');
+                    currentButton.classList.add('fa-play-circle');
+                }
+            }
+        };
+
+        // Master play button event
+        masterPlay.addEventListener('click', togglePlayPause);
+
+        // Enhanced progress bar update
+        audioElement.addEventListener('timeupdate', () => {
+            if(audioElement.duration) {
+                const progress = parseInt((audioElement.currentTime / audioElement.duration) * 100);
+                myProgressBar.value = progress;
+            }
+        });
+
+        // Enhanced seek functionality
+        myProgressBar.addEventListener('change', () => {
+            if(audioElement.duration) {
+                audioElement.currentTime = myProgressBar.value * audioElement.duration / 100;
+            }
+        });
+
+        // Click and drag support for progress bar
+        myProgressBar.addEventListener('input', () => {
+            if(audioElement.duration) {
+                audioElement.currentTime = myProgressBar.value * audioElement.duration / 100;
+            }
+        });
+
+        // Reset all play buttons
+        const makeAllPlays = () => {
+            Array.from(document.getElementsByClassName('songItemPlay')).forEach((element) => {
+                element.classList.remove('fa-pause-circle');
+                element.classList.add('fa-play-circle');
+            });
+        };
+
+        // Enhanced individual song play buttons
+        Array.from(document.getElementsByClassName('songItemPlay')).forEach((element) => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                
+                const clickedIndex = parseInt(e.target.getAttribute('data-index'));
+                
+                if(songIndex === clickedIndex && isPlaying) {
+                    // If same song is playing, pause it
+                    pauseCurrentSong();
+                } else {
+                    // Play new song or resume paused song
+                    makeAllPlays();
+                    songIndex = clickedIndex;
+                    
+                    audioElement.src = songs[songIndex].filePath;
+                    masterSongName.innerText = songs[songIndex].songName;
+                    audioElement.currentTime = 0;
+                    
+                    playCurrentSong();
+                }
+            });
+        });
+
+        // Enhanced next song functionality
+        const playNextSong = () => {
+            makeAllPlays();
+            if(songIndex >= songs.length - 1) {
+                songIndex = 0;
+            } else {
+                songIndex += 1;
+            }
+            
+            audioElement.src = songs[songIndex].filePath;
+            masterSongName.innerText = songs[songIndex].songName;
+            audioElement.currentTime = 0;
+            playCurrentSong();
+        };
+
+        // Enhanced previous song functionality
+        const playPreviousSong = () => {
+            makeAllPlays();
+            if(songIndex <= 0) {
+                songIndex = songs.length - 1;
+            } else {
+                songIndex -= 1;
+            }
+            
+            audioElement.src = songs[songIndex].filePath;
+            masterSongName.innerText = songs[songIndex].songName;
+            audioElement.currentTime = 0;
+            playCurrentSong();
+        };
+
+        // Event listeners for next/previous buttons
+        document.getElementById('next').addEventListener('click', playNextSong);
+        document.getElementById('previous').addEventListener('click', playPreviousSong);
+
+        // Auto play next song when current ends
+        audioElement.addEventListener('ended', () => {
+            playNextSong();
+        });
+
+        // Handle audio loading errors
+        audioElement.addEventListener('error', (e) => {
+            console.log("Audio error:", e);
+            masterSongName.innerText = "Error loading: " + songs[songIndex].songName;
+            // Try next song after error
+            setTimeout(() => {
+                playNextSong();
+            }, 2000);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlayPause();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    playNextSong();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    playPreviousSong();
+                    break;
+            }
+        });
+
+        // Volume control (if you want to add volume slider later)
+        const setVolume = (volume) => {
+            audioElement.volume = Math.max(0, Math.min(1, volume));
+        };
+
+        // Shuffle functionality (for future enhancement)
+        let isShuffled = false;
+        const toggleShuffle = () => {
+            isShuffled = !isShuffled;
+            console.log("Shuffle:", isShuffled ? "ON" : "OFF");
+        };
+
+        // Song item click to play (entire row clickable)
+        songItems.forEach((item, index) => {
+            item.addEventListener('click', (e) => {
+                // Don't trigger if clicking on the play button directly
+                if(!e.target.classList.contains('songItemPlay')) {
+                    const playButton = item.querySelector('.songItemPlay');
+                    if(playButton) {
+                        playButton.click();
+                    }
+                }
+            });
+        });
+
+        console.log("Spotify is initialized with", songs.length, "songs");
+    </script>
+</body>
+</html>
